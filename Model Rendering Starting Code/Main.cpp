@@ -27,10 +27,10 @@ void drawCube()
    //Multi-colored side - FRONT
     glBegin(GL_POLYGON);
 
-    glColor3f(1.0, 0.0, 0.0);     glVertex3f(0.5, -0.5, -0.5);      // P1 is red
-    glColor3f(0.0, 1.0, 0.0);     glVertex3f(0.5, 0.5, -0.5);      // P2 is green
-    glColor3f(0.0, 0.0, 1.0);     glVertex3f(-0.5, 0.5, -0.5);      // P3 is blue
-    glColor3f(1.0, 0.0, 1.0);     glVertex3f(-0.5, -0.5, -0.5);      // P4 is purple
+    glColor3f(1.0, 0.0, 0.0);     glVertex3f(0.1, -0.5, -0.5);      // P1 is red
+    glColor3f(0.0, 1.0, 0.0);     glVertex3f(0.5, 0.5, -0.9);      // P2 is green
+    glColor3f(0.0, 0.0, 1.0);     glVertex3f(-0.5, 0.2, -0.5);      // P3 is blue
+    glColor3f(1.0, 0.0, 1.0);     glVertex3f(-0.5, -0.5, -0.7);      // P4 is purple
 
     glEnd();
 
@@ -38,7 +38,7 @@ void drawCube()
     glBegin(GL_POLYGON);
     glColor3f(1.0, 1.0, 1.0);
     glVertex3f(0.5, -0.5, 0.5);
-    glVertex3f(0.5, 0.5, 0.5);
+    glVertex3f(0.5, 0.2, 0.5);
     glVertex3f(-0.5, 0.5, 0.5);
     glVertex3f(-0.5, -0.5, 0.5);
     glEnd();
@@ -48,7 +48,7 @@ void drawCube()
     glColor3f(1.0, 0.0, 1.0);
     glVertex3f(0.5, -0.5, -0.5);
     glVertex3f(0.5, 0.5, -0.5);
-    glVertex3f(0.5, 0.5, 0.5);
+    glVertex3f(0.5, 0.5, 0.7);
     glVertex3f(0.5, -0.5, 0.5);
     glEnd();
 
@@ -56,9 +56,9 @@ void drawCube()
     glBegin(GL_POLYGON);
     glColor3f(0.0, 1.0, 0.0);
     glVertex3f(-0.5, -0.5, 0.5);
-    glVertex3f(-0.5, 0.5, 0.5);
+    glVertex3f(-0.5, 0.3, 0.5);
     glVertex3f(-0.5, 0.5, -0.5);
-    glVertex3f(-0.5, -0.5, -0.5);
+    glVertex3f(-0.2, -0.5, -0.5);
     glEnd();
 
     // Blue side - TOP
@@ -88,11 +88,70 @@ void display() {
     //  Clear screen and Z-buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  //-------------------------
+  // Projection Matrix
+  //---------------------
+
+  //setup
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    //------------------
+    //clipping planes, ortho and perspective
+    //
+
+    float clipNear = 0.1f, clipFar = 100.0f;
+
+    float orthoLeft = -1, orthoRight = 1, orthoTop = 1, orthoBottom = -1;
+    // glOrtho(orthoLeft, orthoRight, orthoBottom, orthoTop, clipNear, clipFar);
+
+    //perspective view different view based on camera position, views wider field of view.
+
+    float fov = 120, aspectration = windowWidth / windowHeight;
+    gluPerspective(fov, aspectration, clipNear, clipFar);
+
+    //----------------------------------------//
+   // VIEW AND MODEL MATRICES COMBINED       //
+  //----------------------------------------//
+
+    //Setup the matrix to be edited.
+
+    glMatrixMode(GL_MODELVIEW);
 
     // Reset the matrix
     glLoadIdentity();
 
+  
 
+
+    //  ------------------------------
+    // VIEW TRANSFORMS 
+    //--------------------------------
+
+    float cameraX = 0, cameraY = 0, cameraZ = -1;
+    float lookX = 0, lookY =0.5, lookZ = 0;
+    float upX = 0, upY = 1, upZ = 0;
+
+    gluLookAt(cameraX, cameraY, cameraZ,
+        lookX, lookY, lookZ,
+        upX, upY, upZ);
+
+    //----------------------------------------//
+  // MODELS TRANSFORMS      //
+ //----------------------------------------//
+
+    //translate to set location
+
+    glTranslatef(0.0f, 0.5f, 0.0f);
+
+    //roate to correct angles
+    glRotatef(rotate_y, 0.0f, 1.0f, 0.0f); // y axis, yaw
+    glRotatef(rotate_x, 1.0f, 0.0f, 0.0f); // x axis, pitch
+    glRotatef(0, 0.0f, 0.0f, 1.0f); // z axis, roll
+
+    //scale based on constants in x y and z coordinates.
+    glScalef(1, 1, 1);
 
     // MODEL - draw the cube
     drawCube();
@@ -117,8 +176,11 @@ void specialKeys(int key, int x, int y) {
     else if (key == GLUT_KEY_LEFT)
         rotate_y -= 5;
 
+    // Up arrow, inrease x rotation by 5 degrees
     else if (key == GLUT_KEY_UP)
         rotate_x += 5;
+
+    //down arrow, decrease x rotation by 5 degrees.
 
     else if (key == GLUT_KEY_DOWN)
         rotate_x -= 5;
